@@ -1,0 +1,10 @@
+resolver: lts-3.11
+packages:
+- '.'
+- location:
+    git: https://github.com/meditans/hint
+    commit: 0f14c7b735fc66c6c33dcaabb4b06daf3cd9ba97
+  extra-dep: true
+extra-deps: []
+flags: {}
+extra-package-dbs: []
