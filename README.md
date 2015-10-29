@@ -47,5 +47,8 @@ and/or integrate the heuristics as a plugint in the new
 This project is in its early stage, so feedback or suggestions on desired
 functionality or architecture is appreciated.
 
+You can find a design document, written in italian, in the file `design.org`,
+intended for the (wonderful) people of Haskell-ITA.
+
 For the later stages, you can send me a pull request, and/or if you're a
 beginner, get in touch to be mentored in contributions.
