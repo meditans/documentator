@@ -10,6 +10,20 @@ codice nella versione funzionante, la branch `develop` su cui vengono integrate
 le features di sviluppo, e infine una branch per ogni feature che si va a
 risolvere. Non è uno schema definitivo, sono molto interessato a conoscere
 sistemi migliori.
+*** Remote Hacking-Day Requirements
+Durante'hacking-day ci si trova in piu` persone a lavorare allo stesso codice.
+
+Per i gruppi coesi (pair-programming) servirebbe:
+- un tool di condivisione live del file in editing (toghetherly per Emacs per esempio), o di desktop sharing
+- un tool di conference anche solo audio: Mumble, o Skype o Hanghout o altri
+
+Per la collaborazione fra gruppi/persone servirebbe:
+- un repo Git "interno" per condividere le release intermedie della giornata, per poi mettere in bella tutto dopo
+- un tool per condividere commit/patch via Git e fare review del codice
+- una chat per avvisare se ci sono novita` o chiedere aiuto
+
+Dopo di che al termine della giornata i responsabili del progetto possono mettere in bella i commit da esportare verso GitHub.
+
 ** TODO Organizzazione della discussione
 Capire meglio quali sono i canali tramite cui tenersi in contatto e/o fare
 pair-programming. Magari organizzare una discussione corale tra tutti gli
@@ -27,3 +41,62 @@ già familiare, e quindi sarebbe ingiusto includerle nella nostra analisi
 Struttura dei moduli e dello scope della libreria in generale.
 ** TODO Definizione di obiettivi preliminari
 Quali sono le funzioni che dovremmo sviluppare per prime?
+* Note Massimo Z. da integrare
+TODO secondo me il README e` poco chiaro su quello che deve fare il progetto.
+** Esempio di Use Case del Tool
+Rossi e` un programmatore Haskell. Sta usando la libreria Acme, ma la documentazione e` scarsa. Apre la finestra di Documentator e vede i type principali della libreria, le funzioni principali. Guarda se ci sono altre applicazioni che la usano e come la usano. A differenza di Haddock, Documentator permette di vedere anche il codice delle funzioni della libreria e il codice delle applicazioni che la usano. 
+
+Rossi in particolare scopre dei template d'uso tipici della libreria, come sono collegate fra di loro le funzioni nell'uso reale, ecc..
+
+Rossi scrive del codice di esempio per testare la libreria.
+
+Rossi aggiunge della documentazione nel package Acme.Tutorial, Acme.Example e Acme.CodeSnippets e aggiunge della documentazione alla libreria, sempre usando Documentator e in formato compatibile Haddock. Quando e` soddisfatto spinge le sue note su un branch di Documentator Community e Documentator Community collabora con l'upstream per integrare la nuova documentazione aggiunta nel package upstream della libreria.
+
+In questo modo il lavoro di studio della libreria di Rossi non e` andato perso, e ora e` piu` facile per tutti capire la libreria, dato che comprende sia una documentazione delle funzioni, che esempi d'uso.
+
+Chi vuole studiare la libreria puo` usare sia Haddock, che navigare nel codice con Documentator.
+
+Documentator e` un tool per navigare nel codice Haskell di diversi progetti e librerie. Piu` che un editor, e` un tool per leggere e comprendere una nuova base di codice in Haskell. La parte di editor e` limitata all'aggiunta di codice di Tutorial e simile e al miglioramento della documentazione.
+
+Documentator parte dall'idea che navigare nel codice e` il primo passo per capire cosa fa un progetto, per poi usarlo, o estenderlo. Senza comprensione non puo` esserci riuso.
+
+Documentator si comporta anche come un Hoogle on Steroids, e permette in modalita` server di tornare a editor e IDE informazioni come:
+- funzioni utili
+- tipi e librerie utili
+- code snippet e template
+** Tecnologie da Studiare e forse Usare
+Ci sono numerose tecnologie per l'analisi statica di codice imperativo. I linguaggi funzionali hanno meno esigenze, dato che le possibilita` di errori nel codice sono minori, dato che sono direttamente i Types a dire se si sono "incastrate" le funzioni bene.
+
+Ci sono numerose librerie che permettono di mantere informazioni sulle dipendenze fra funzioni e relative chiusure transitive, in maniera compatta in RAM o su disco, e di rispondere a query utili in fase di analisi, in tempi rapidissimi. 
+
+E` possibile memorizzare le informazioni derivate dall'analisi di una libreria su un database anche embeded in modo da usare poca RAM, e avere tempi di avvio dell'applicazione rapidi. 
+
+Si tratta di studiare l'esistente e pensare cosa puo` essere utile nel contesto dei linguaggi funzionali. 
+
+** TODO Nix Build Notes
+
+I put in ~/.nixpkgs/config.nix something like
+
+#+begin_lang options
+{
+
+  packageOverrides = super: let self = super.pkgs; pkgs0 = super.pkgs; in {
+      haskellPackages = super.haskellPackages.override {
+        overrides = self: super: {
+
+         "hint" = super."hint".overrideDerivation (attrs: {
+           src = pkgs0.fetchFromGitHub {
+             owner = "meditans";
+             repo = "hint";
+             rev = "0f14c7b735fc66c6c33dcaabb4b06daf3cd9ba97";
+             sha256 = "027z6xzzs58cw4v03lx2r6940w2w34yz827s73qws8sb01vhhmg9";
+           };  
+         });
+      };
+     };
+  };
+}
+#+end_lang
+
+But I have still run-time problems.
+

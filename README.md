@@ -1,6 +1,6 @@
 # Documentator
 
-This project is an exploration of the design space for "(semi)automatic documentation" in haskell.
+This project is an exploration of the design space for "(semi)automatic documentation" in Haskell.
 
 The approach is multifold:
 
@@ -28,7 +28,7 @@ function which yields the data contained in a given type.
 
 ### Improving heuristics with source analysis
 
-This could be linked to an automatic API to scan the haskell projects on github
+This could be linked to an automatic API to scan the Haskell projects on github
 and/or the hackage packages, to find and retrieve commonly used functions or
 patterns, or to refine the heuristic for the relative importance of functions and types.
 
