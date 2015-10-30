@@ -34,7 +34,17 @@ patterns, or to refine the heuristic for the relative importance of functions an
 
 ## Installing
 
-Please, use the stack.yaml file, as I am using a slightly patched version of `hint`.
+Please, use the stack.yaml file, as I am using a slightly patched version of
+`hint`. So, if you use `stack`, `stack build` should do the trick.
+
+If you prefer to use cabal, create new folder, `cd` into it and follow
+these steps:
+
+    cabal sandbox init
+    git clone https://github.com/meditans/hint
+    git clone https://github.com/meditans/documentator
+    cabal install hint/
+    cabal install
 
 ## Long term plan
 
