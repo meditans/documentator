@@ -3,6 +3,7 @@ Lo scopo di questo file è delineare i principali obiettivi di sviluppo ed i
 problemi che incontriamo nello sviluppo della libreria.
 * Problemi di ordine organizzativo
 ** Modello di sviluppo
+*** Workflow
 Per quanto riguarda il modello di sviluppo, consiglio di usare un modello di
 organizzazione dei branch basato su [[http://nvie.com/posts/a-successful-git-branching-model/][questo workflow]]. Potete anche lasciare a me
 i dettagli, la sintesi è che vi sono sempre la branch `master` su cui vive il
@@ -10,20 +11,18 @@ codice nella versione funzionante, la branch `develop` su cui vengono integrate
 le features di sviluppo, e infine una branch per ogni feature che si va a
 risolvere. Non è uno schema definitivo, sono molto interessato a conoscere
 sistemi migliori.
-*** Remote Hacking-Day Requirements
-Durante'hacking-day ci si trova in piu` persone a lavorare allo stesso codice.
+*** Collaborazione online
+Per i momenti di maggiore condivisione (pair-programming) servirebbe:
+- un tool di condivisione live del file in editing (toghetherly per (spac)emacs per esempio), o di desktop sharing
+- un tool di conference anche solo audio: Mumble, o Skype o Hangout o altri
 
-Per i gruppi coesi (pair-programming) servirebbe:
-- un tool di condivisione live del file in editing (toghetherly per Emacs per esempio), o di desktop sharing
-- un tool di conference anche solo audio: Mumble, o Skype o Hanghout o altri
+(Esprimete le vostre preferenze sui tool su #haskell.it)
 
-Per la collaborazione fra gruppi/persone servirebbe:
-- un repo Git "interno" per condividere le release intermedie della giornata, per poi mettere in bella tutto dopo
-- un tool per condividere commit/patch via Git e fare review del codice
-- una chat per avvisare se ci sono novita` o chiedere aiuto
+Per i momenti di lavoro più indipendente basta:
+- il nostro modello di lavoro per git
+- la chat di #haskell.it per avvisare se ci sono novità o chiedere aiuto
 
-Dopo di che al termine della giornata i responsabili del progetto possono mettere in bella i commit da esportare verso GitHub.
-
+Man mano che le push request si raffinano ci sarà il merge verso le branches più stabili.
 ** TODO Organizzazione della discussione
 Capire meglio quali sono i canali tramite cui tenersi in contatto e/o fare
 pair-programming. Magari organizzare una discussione corale tra tutti gli
