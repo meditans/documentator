@@ -23,10 +23,14 @@ Per i momenti di lavoro più indipendente basta:
 - la chat di #haskell.it per avvisare se ci sono novità o chiedere aiuto
 
 Man mano che le push request si raffinano ci sarà il merge verso le branches più stabili.
-** TODO Organizzazione della discussione
-Capire meglio quali sono i canali tramite cui tenersi in contatto e/o fare
-pair-programming. Magari organizzare una discussione corale tra tutti gli
-interessati per fare brainstorming collettivo.
+** Tecnologie da tenere d'occhio
+Ci sono numerose tecnologie per l'analisi statica di codice imperativo. I linguaggi funzionali hanno meno esigenze, dato che le possibilita` di errori nel codice sono minori, dato che sono direttamente i tipi a dire se le funzioni sono composte bene.
+
+Numerose librerie permettono di mantere informazioni sulle dipendenze fra funzioni e relative chiusure transitive, in maniera compatta in RAM o su disco, e di rispondere a query utili in fase di analisi, in tempi rapidissimi. È possibile memorizzare le informazioni derivate dall'analisi di una libreria su un database anche embeded in modo da usare poca RAM, e avere tempi di avvio dell'applicazione rapidi. 
+
+Si tratta di studiare l'esistente e pensare cosa può essere utile nel contesto dei linguaggi funzionali. 
+
+Tenere d'occhio anche le discussioni sul repository di `haskell-ide`, come [[https://github.com/haskell/haskell-ide/issues/10][questa]].
 * Problemi di principio
 ** Euristiche della presentazione dei concetti
 *** TODO Import propri / Import impropri
@@ -40,40 +44,9 @@ già familiare, e quindi sarebbe ingiusto includerle nella nostra analisi
 Struttura dei moduli e dello scope della libreria in generale.
 ** TODO Definizione di obiettivi preliminari
 Quali sono le funzioni che dovremmo sviluppare per prime?
-* Note Massimo Z. da integrare
-TODO secondo me il README e` poco chiaro su quello che deve fare il progetto.
-** Esempio di Use Case del Tool
-Rossi e` un programmatore Haskell. Sta usando la libreria Acme, ma la documentazione e` scarsa. Apre la finestra di Documentator e vede i type principali della libreria, le funzioni principali. Guarda se ci sono altre applicazioni che la usano e come la usano. A differenza di Haddock, Documentator permette di vedere anche il codice delle funzioni della libreria e il codice delle applicazioni che la usano. 
-
-Rossi in particolare scopre dei template d'uso tipici della libreria, come sono collegate fra di loro le funzioni nell'uso reale, ecc..
-
-Rossi scrive del codice di esempio per testare la libreria.
-
-Rossi aggiunge della documentazione nel package Acme.Tutorial, Acme.Example e Acme.CodeSnippets e aggiunge della documentazione alla libreria, sempre usando Documentator e in formato compatibile Haddock. Quando e` soddisfatto spinge le sue note su un branch di Documentator Community e Documentator Community collabora con l'upstream per integrare la nuova documentazione aggiunta nel package upstream della libreria.
-
-In questo modo il lavoro di studio della libreria di Rossi non e` andato perso, e ora e` piu` facile per tutti capire la libreria, dato che comprende sia una documentazione delle funzioni, che esempi d'uso.
-
-Chi vuole studiare la libreria puo` usare sia Haddock, che navigare nel codice con Documentator.
-
-Documentator e` un tool per navigare nel codice Haskell di diversi progetti e librerie. Piu` che un editor, e` un tool per leggere e comprendere una nuova base di codice in Haskell. La parte di editor e` limitata all'aggiunta di codice di Tutorial e simile e al miglioramento della documentazione.
-
-Documentator parte dall'idea che navigare nel codice e` il primo passo per capire cosa fa un progetto, per poi usarlo, o estenderlo. Senza comprensione non puo` esserci riuso.
-
-Documentator si comporta anche come un Hoogle on Steroids, e permette in modalita` server di tornare a editor e IDE informazioni come:
-- funzioni utili
-- tipi e librerie utili
-- code snippet e template
-** Tecnologie da Studiare e forse Usare
-Ci sono numerose tecnologie per l'analisi statica di codice imperativo. I linguaggi funzionali hanno meno esigenze, dato che le possibilita` di errori nel codice sono minori, dato che sono direttamente i Types a dire se si sono "incastrate" le funzioni bene.
-
-Ci sono numerose librerie che permettono di mantere informazioni sulle dipendenze fra funzioni e relative chiusure transitive, in maniera compatta in RAM o su disco, e di rispondere a query utili in fase di analisi, in tempi rapidissimi. 
-
-E` possibile memorizzare le informazioni derivate dall'analisi di una libreria su un database anche embeded in modo da usare poca RAM, e avere tempi di avvio dell'applicazione rapidi. 
-
-Si tratta di studiare l'esistente e pensare cosa puo` essere utile nel contesto dei linguaggi funzionali. 
-
-** TODO Nix Build Notes
-
+** TODO Definizione preliminare dell'interfaccia utente
+Come vogliamo che l'utente interagisca con documentator?
+** TODO Compilazione per Nix
 I put in ~/.nixpkgs/config.nix something like
 
 #+begin_lang options
@@ -98,4 +71,11 @@ I put in ~/.nixpkgs/config.nix something like
 #+end_lang
 
 But I have still run-time problems.
+* Esempio di Use Case del Tool
+Supponiamo di dover usare la libreria Acme, che non ha documentazione su Haddock. Con Documentator possiamo scoprire i tipi e le funzioni principali della libreria, sia dall'analisi del codice sorgente che cercando dove e come la libreria è stata usata altrove.
 
+In particolare sarà più facile individuare dei template d'uso tipici della libreria (ad esempio, come sono collegate fra di loro le funzioni nell'uso reale), e quindi scrivere più rapidamente del codice di esempio per testare la libreria.
+
+A questo punto sarà possibile creare della documentazione che serva anche ad altri, e riportarla in qualche modo upstream, in una collezione di tutorial curata o, con la collaborazione del mantainer del pacchetto, in un modulo di documentazione come `Pipes.Tutorial`.
+
+L'obiettivo finale del progetto è rendere più facile la lettura e la comprensione di una nuova base di codice in Haskell. Sarebbe anche bello integrare queste funzioni negli editor come un Hoogle on Steroids, che, in modalità server, restituisce a editor e IDE informazioni come funzioni e tipi utili, code snippet e templates.
