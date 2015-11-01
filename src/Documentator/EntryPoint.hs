@@ -92,7 +92,7 @@ b = preview (_Right._Fun) <$> aFunction "Control.Lens"
 tipiFunzioni mod = do
   funs <- toListOf (folded . _Fun) <$> queryModule mod
   tipi <- mapM (\x -> noNewLines <$> I.typeOf x) funs
-  return (map (\t -> getComponents <$> parseType t) tipi)
+  return $ map ((getComponents <$>) . parseType) tipi
 
 getComponents :: Type -> [Type]
 getComponents (TyForall Nothing ctx t) = map (TyForall Nothing ctx) (getComponents t)
