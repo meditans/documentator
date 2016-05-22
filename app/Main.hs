@@ -9,6 +9,7 @@ main = do r <- runInterpreter simpleQuery
             Left err -> printInterpreterError err
             Right () -> putStrLn "That's all folks"
 
+-- This is a simple query which prints the functions in the Control.Lens module
 simpleQuery :: Interpreter ()
 simpleQuery = do
   setImportsQ [("Control.Lens", Nothing)]
