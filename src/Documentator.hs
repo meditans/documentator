@@ -1,26 +1,27 @@
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -fdefer-typed-holes #-}
+
 module Documentator where
 
 import           Language.Haskell.Exts.Parser (fromParseResult, parseDecl,
                                                parseType)
-import           Language.Haskell.Exts.Syntax hiding (ModuleName)
-import           Language.Haskell.Interpreter
+import           Language.Haskell.Exts.Syntax (Decl (..), Name (..), QName (..),
+                                               Type (..))
+import           Language.Haskell.Interpreter (InterpreterError,
+                                               ModuleElem (..), ModuleName,
+                                               MonadInterpreter,
+                                               getModuleExports, runInterpreter,
+                                               setImports, typeOf)
 
 import           Control.Lens                 hiding (contains)
-import           Control.Lens.Plated
 import           Data.Data.Lens               (uniplate)
 
-import           Data.List
+import           Data.List                    (group, sort)
 
 -- | A name of a module, like "Control.Lens"
 type ModuleName' = String
 
--- | This functions extracts the names and types. TODO
--- simpleQuery :: ModuleName' -> Interpreter ()
--- functions :: ModuleName -> IO (Either InterpreterError [ModuleElem])
--- functions :: [ModuleName] -> IO (Either InterpreterError [String])
+functions :: [ModuleName] -> IO (Either InterpreterError [String])
 functions ms = runInterpreter $ do
   setImports ("Prelude":ms)
   exports <- concat <$> mapM getModuleExports ms
@@ -28,12 +29,14 @@ functions ms = runInterpreter $ do
   functionsWithTypes <- mapM addType functionsNames
   return functionsWithTypes
 
+datas :: [ModuleName] -> IO (Either InterpreterError [ModuleElem])
 datas ms = runInterpreter $ do
   setImports ("Prelude":ms)
   exports <- concat <$> mapM getModuleExports ms
   let ds = filter isData exports
   return ds
 
+classes :: [ModuleName] -> IO (Either InterpreterError [String])
 classes ms = runInterpreter $ do
   setImports ("Prelude":ms)
   exports <- concat <$> mapM getModuleExports ms
@@ -75,25 +78,10 @@ isClass _ = False
 printInterpreterError :: InterpreterError -> IO ()
 printInterpreterError e = putStrLn $ "Ups... " ++ (show e)
 
-
--- Parsing part
--- use the function "parseType" in "Language.Haskell.Exts.Parser"
-
--- What are the building blocks we are going to build on?
--- An example should be type constructors!
-
-------------------
--- example function
--- tween :: (Fractional t, Monad m, Ord t) => Easing t -> t -> t -> t -> SplineT t t m t
-
--- Come devo parsare questa funzione?
--- Mi interessa individuare le classi ed i punti salienti
--- ad esempio, le classi che non sono dentro prelude, e in questo caso i costruttori di tipo
-
------------ Plated instance for Type
 instance Plated Type where
   plate = uniplate
 
+simpleType1 :: Type
 simpleType1 = fromParseResult $ parseType "Step b c -> Event c"
 
 isTyCon :: Type -> Bool
@@ -105,7 +93,6 @@ _TyFun = prism (\(t1,t2) -> TyFun t1 t2) f
   where
     f (TyFun t1 t2) = Right (t1,t2)
     f x             = Left x
-
 
 -- This function takes a string like: "stepResult :: Step b c -> Event c"
 -- and returns a list of type constructors.
@@ -126,10 +113,12 @@ pattern KnownType s = TyCon (UnQual (Ident s))
 isContainedIn :: Type -> Type -> Bool
 isContainedIn s t = s `elem` findTyCon t
 
+prettyVaryingContains :: Type -> IO ()
 prettyVaryingContains t = do
   fs <- varyingFunctions
   mapM_ print $ filter ((t `isContainedIn`) . myType) fs
 
+prettyVaryingResultContains :: Type -> IO ()
 prettyVaryingResultContains t = do
   fs <- varyingFunctions
   mapM_ print $ filter (\f -> t `isContainedIn` result (myType f)) fs
@@ -154,7 +143,7 @@ result = transform (\x -> case x of
 arguments :: Type -> [Type]
 arguments (TyForall _ _ t) = arguments t
 arguments (TyFun t1 t2)    = t1 : arguments t2
-arguments t                = []
+arguments _                = []
 
 insideAbstractions :: [Type]
 insideAbstractions = [KnownType "VarT", KnownType "SplineT", KnownType "Easing"]
@@ -164,10 +153,12 @@ test = do
   f <- varyingFunctions
   mapM_ print $ filter (containsNot insideAbstractions . result . myType) f
 
+test2 :: IO ()
 test2 = do
   f <- varyingFunctions
   mapM_ print $ filter (all (containsNot insideAbstractions) . arguments . myType) f
 
+functionsByProp :: (String -> Bool) -> IO ()
 functionsByProp p = do
   f <- varyingFunctions
   mapM_ print $ filter p f
@@ -179,9 +170,11 @@ prop1 f =
   where
     tf = myType f
 
+prop2 :: String -> Bool
 prop2 f = any (contains [KnownType "SplineT"]) (arguments tf) && containsNot insideAbstractions (result tf)
   where tf = myType f
 
+destructor :: String -> IO ()
 destructor s = functionsByProp $ \f ->
   let tf = myType f
   in    any (contains [KnownType s]) (arguments tf)
