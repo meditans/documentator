@@ -1,19 +1,20 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fdefer-typed-holes #-}
 
 module Documentator where
 
 import           Language.Haskell.Exts.Parser (fromParseResult, parseDecl,
-                                               parseType)
+                                                parseType, parse, parseExp, ParseResult, parseDeclWithMode, defaultParseMode, ParseMode (..))
+import           Language.Haskell.Exts.Extension (KnownExtension (..), Extension (..))
 import           Language.Haskell.Exts.Syntax (Decl (..), Name (..), QName (..),
                                                Type (..))
-import           Language.Haskell.Interpreter (InterpreterError,
-                                               ModuleElem (..), ModuleName,
-                                               MonadInterpreter,
-                                               getModuleExports, runInterpreter,
-                                               setImports, typeOf)
+import Language.Haskell.Interpreter
+       (InterpreterError, ModuleElem(..), ModuleName, MonadInterpreter,
+        getModuleExports, runInterpreter, setImports, typeOf, infoOf,
+        languageExtensions, OptionVal(..), set)
 
-import           Control.Lens                 hiding (contains)
+import           Control.Lens                 hiding (contains, set)
 import           Data.Data.Lens               (uniplate)
 
 import           Data.List                    (group, sort)
@@ -26,8 +27,7 @@ functions ms = runInterpreter $ do
   setImports ("Prelude":ms)
   exports <- concat <$> mapM getModuleExports ms
   let functionsNames = map prettyPrint $ filter isFunction exports
-  functionsWithTypes <- mapM addType functionsNames
-  return functionsWithTypes
+  mapM addType functionsNames
 
 datas :: [ModuleName] -> IO (Either InterpreterError [ModuleElem])
 datas ms = runInterpreter $ do
@@ -43,6 +43,7 @@ classes ms = runInterpreter $ do
   let cs = map prettyPrint $ filter isClass exports
   return cs
 
+varyingModules :: [String]
 varyingModules = [ "Control.Varying"
                  , "Control.Varying.Core"
                  , "Control.Varying.Event"
@@ -76,7 +77,7 @@ isClass (Class _ _) = True
 isClass _ = False
 
 printInterpreterError :: InterpreterError -> IO ()
-printInterpreterError e = putStrLn $ "Ups... " ++ (show e)
+printInterpreterError e = putStrLn $ "Ups... " ++ show e
 
 instance Plated Type where
   plate = uniplate
@@ -85,11 +86,11 @@ simpleType1 :: Type
 simpleType1 = fromParseResult $ parseType "Step b c -> Event c"
 
 isTyCon :: Type -> Bool
-isTyCon (TyCon t) = True
+isTyCon (TyCon _) = True
 isTyCon _         = False
 
 _TyFun :: Prism' Type (Type,Type)
-_TyFun = prism (\(t1,t2) -> TyFun t1 t2) f
+_TyFun = prism (uncurry TyFun) f
   where
     f (TyFun t1 t2) = Right (t1,t2)
     f x             = Left x
@@ -199,3 +200,21 @@ primitiveConstructor s =
         (arguments $ myType f) &&
     contains [KnownType s]
              (result $ myType f)
+
+---- Example infoOf usage
+foo :: IO ()
+foo = do
+  Right a <- runInterpreter $ do setImports ("Control.Monad" : varyingModules)
+                                 infoOf "VarT"
+  -- let a' = tail . dropWhile (/= '\n') $ a
+  -- putStrLn a'
+  let p = parseDeclWithMode (defaultParseMode {extensions = [EnableExtension GADTs
+                                                            ,EnableExtension KindSignatures]} ) fooString2
+  print p
+  putStrLn a
+  return ()
+
+
+fooString = "data VarT (m :: * -> *) a b where\n Done :: b -> VarT m a b\n VarT :: (a -> m (b, VarT m a b)) -> VarT m a b"
+fooString2 = "type role VarT nominal nominal nominal"
+-- fooString = "data VarT m a b where\n Done :: b -> VarT m a b\n VarT :: (a -> m (b, VarT m a b)) -> VarT m a b"
