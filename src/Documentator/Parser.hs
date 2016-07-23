@@ -54,21 +54,21 @@ isTypeSig _               = False
 
 ---------------------------------------------------------------- Extractors
 
-typeSignaturesExtractor :: Extractor [Decl (SrcSpanInfo, [Comment])]
+typeSignaturesExtractor :: Extractor [Located Decl]
 typeSignaturesExtractor = filter isTypeSig . declarations
   where
     declarations :: Module t -> [Decl t]
     declarations (Module _ _ _ _ ds) = ds
 
-typesExtractor :: Extractor [Type (SrcSpanInfo, [Comment])]
+typesExtractor :: Extractor [Located Type]
 typesExtractor = map getType . filter isTypeSig . typeSignaturesExtractor
   where
     getType (TypeSig _ _ t) = t
 
-instance {-# OVERLAPPING #-} Ord (Type (SrcSpanInfo, [Comment])) where
+instance {-# OVERLAPPING #-} Ord (Located Type) where
   compare t1 t2 = compare (fmap (const ()) t1) (fmap (const ()) t2)
 
-instance {-# OVERLAPPING #-} Ord (QName (SrcSpanInfo, [Comment])) where
+instance {-# OVERLAPPING #-} Ord (Located QName) where
   compare qn1 qn2 = compare (fmap (const ()) qn1) (fmap (const ()) qn2)
 
 tyConExtractor :: Extractor [Located QName]
