@@ -7,23 +7,29 @@ import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.IO as IO
 import Web.Browser
 import Data.Monoid
+import Documentator.Types
+import Language.Haskell.Exts.Annotated
 
 main :: IO ()
-main = do report <- pure generateReport
+main = do let topUsedTypes = []
+          report <- pure $ generateReport topUsedTypes
           IO.writeFile "/tmp/report.html" report
           putStrLn "generated /tmp/report.html"
           openBrowser "file:///tmp/report.html"
           return ()
 
-generateReport :: T.Text
-generateReport = renderText html 
+generateReport :: TopUsedTypes -> T.Text
+generateReport = renderText . html
 
-html :: Html ()
-html = h1_ "Automatic DOC generator" <> 
+type TopUsedTypes = [(Located Type, Int)] 
+
+html :: TopUsedTypes -> Html ()
+html topUsedTypes = h1_ "Automatic DOC generator" <> 
   h2_ "Top used types" 
     <> table_ ( tr_ (th_ "Type Name" <> th_ "N. of Usages") <>
                      td_ "First Type" <> td_ "1")
-  
+
+
 
           
       
