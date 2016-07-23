@@ -6,6 +6,7 @@ import Lucid
 import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.IO as IO
 import Web.Browser
+import Data.Monoid
 
 main :: IO ()
 main = do report <- pure generateReport
@@ -18,4 +19,11 @@ generateReport :: T.Text
 generateReport = renderText html 
 
 html :: Html ()
-html = table_ (tr_ (td_ (p_ "Hello, World!")))
+html = h1_ "Automatic DOC generator" <> 
+  h2_ "Top used types" 
+    <> table_ ( tr_ (th_ "Type Name" <> th_ "N. of Usages") <>
+                     td_ "First Type" <> td_ "1")
+  
+
+          
+      
