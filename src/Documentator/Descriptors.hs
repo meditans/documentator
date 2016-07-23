@@ -78,3 +78,8 @@ argumentsTyCon t@(TyWildCard _ _) = [t]
 isTyFun :: Located Type -> Bool
 isTyFun (TyFun _ _ _) = True
 isTyFun _           = False
+
+filterDestructorsFor :: [Located Decl] -> Type () -> [Located Decl]
+filterDestructorsFor decls ty = filter hasTyArgument decls where
+    hasTyArgument (TypeSig _ _ sigType) = ty `elem` map (fmap (const ())) (argumentsTyCon sigType)
+    hasTyArgument _ = False
