@@ -30,7 +30,6 @@ executable documentator-exe
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , documentator
-                     , hint
                      , haskell-src-exts
                      , lens
                      , varying
