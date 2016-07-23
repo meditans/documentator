@@ -50,6 +50,13 @@ typesExtractor = map getType . filter isTypeSig . typeSignaturesExtractor
 tyConExtractor :: Extractor [QName]
 tyConExtractor = ordNub . sort . concatMap allTyCon . ordNub . typesExtractor
 
+typeUsages :: Extractor [(Type, Int)]
+typeUsages =  sort . count . typesExtractor
+
+showTypeUsages :: Extractor [(Type, Int)] -> IO ()
+showTypeUsages e = g e >>= mapM_ (putStrLn . str)
+  where str (t, num) = (prettyPrint t) ++ " " ++ show num
+
 resultTypeExtractor :: Extractor [Type]
 resultTypeExtractor = map resultTyCon . ordNub . typesExtractor
 
