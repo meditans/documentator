@@ -37,12 +37,13 @@ patterns, or to refine the heuristic for the relative importance of functions an
 Please, use the stack.yaml file, as I am using a slightly patched version of
 `hint`. So, if you use `stack`, `stack build` should do the trick.
 
-If you prefer to use cabal, create new folder, `cd` into it and follow
-these steps:
+If you prefer to use cabal:
 
+    git clone https://github.com/meditans/documentator
+    cd documentator
     cabal sandbox init
     git clone https://github.com/meditans/hint
-    git clone https://github.com/meditans/documentator
+    git clone https://github.com/meditans/preprocessor
     cabal sandbox add-source ./hint
     cabal sandbox add-source ./preprocessor
     cabal install
