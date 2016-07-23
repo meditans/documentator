@@ -15,7 +15,9 @@ import Control.Lens
 import Data.List
 
 myParse :: FilePath -> IO (ParseResult (Module, [Comment], [UnknownPragma]))
-myParse f = parseFileContentsWithCommentsAndPragmas defaultParseMode <$> preprocessFile f
+myParse f = parseFileContentsWithCommentsAndPragmas parseMode <$> preprocessFile f
+  where
+    parseMode = defaultParseMode {fixities = Just []}
 
 myParseOnlyModule :: FilePath -> IO (ParseResult Module)
 myParseOnlyModule f = (fmap . fmap) fst3 (myParse f)

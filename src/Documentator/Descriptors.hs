@@ -59,7 +59,7 @@ resultTyCon t@(TyWildCard _) = t
 
 argumentsTyCon :: Type -> [Type]
 argumentsTyCon (TyForall _ _ t) = argumentsTyCon t
-argumentsTyCon (TyFun t _) = allTypes t
+argumentsTyCon (TyFun t1 t2) = [t1] ++ (if isTyFun t2 then argumentsTyCon t2 else [])
 argumentsTyCon t@(TyTuple _ _) = [t]
 argumentsTyCon t@(TyList _) = [t]
 argumentsTyCon t@(TyParArray _) = [t]
@@ -74,3 +74,7 @@ argumentsTyCon t@(TyEquals _ _) = [t]
 argumentsTyCon t@(TySplice _) = [t]
 argumentsTyCon t@(TyBang _ _) = [t]
 argumentsTyCon t@(TyWildCard _) = [t]
+
+isTyFun :: Type -> Bool
+isTyFun (TyFun _ _) = True
+isTyFun _           = False
