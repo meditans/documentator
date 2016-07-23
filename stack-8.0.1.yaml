@@ -1,7 +1,16 @@
 resolver: nightly-2016-07-19
+
 packages:
 - '.'
-- ../preprocessor
+- location:
+    git: https://github.com/meditans/preprocessor.git
+    commit: 7f596ec5671ae29e42b336bbc703df1ebce03842
+  extra-dep: true
+- location:
+    git: https://github.com/meditans/hint.git
+    commit: 0b52af4c79c1473b0ec9395d92cf589a8219b867
+  extra-dep: true
+
 extra-deps: []
 flags: {}
 extra-package-dbs: []
