@@ -10,11 +10,12 @@ import Data.Monoid
 import Documentator.Types
 import Language.Haskell.Exts.Annotated
 import Data.String
+import Documentator.Parser
 
 
 main :: IO ()
-main = do let topUsedTypes = []
-          
+main = do mod <- myParse "/Users/luca/Zurihac/hakyll/src/Hakyll/Web/Template/Internal.hs" 
+          let topUsedTypes = typeUsages mod
           report <- pure $ generateReport topUsedTypes
           IO.writeFile "/tmp/report.html" report
           putStrLn "generated /tmp/report.html"
@@ -34,7 +35,7 @@ html topUsedTypes = h1_ "Automatic DOC generator" <>
 
 
 row :: (Located Type, Int) -> Html ()
-row (t, num) = td_ firstColumn <> td_ secondColumn
+row (t, num) = tr_ (td_ firstColumn <> td_ secondColumn)
     where firstColumn = fromString (prettyPrint (fmap fst t))
           secondColumn = fromString $ show num
         
