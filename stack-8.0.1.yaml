@@ -1,0 +1,7 @@
+resolver: nightly-2016-07-19
+packages:
+- '.'
+- ../preprocessor
+extra-deps: []
+flags: {}
+extra-package-dbs: []
