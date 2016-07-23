@@ -1,6 +1,7 @@
 resolver: lts-6.3
 packages:
 - '.'
+- ../preprocessor
 extra-deps:
 - varying-0.5.0.0
 flags: {}
