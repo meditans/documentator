@@ -43,7 +43,8 @@ these steps:
     cabal sandbox init
     git clone https://github.com/meditans/hint
     git clone https://github.com/meditans/documentator
-    cabal install hint/
+    cabal sandbox add-source ./hint
+    cabal sandbox add-source ./preprocessor
     cabal install
 
 ## Long term plan
