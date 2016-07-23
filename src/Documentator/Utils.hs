@@ -11,6 +11,10 @@ import Language.Haskell.Exts.Pretty
 
 import qualified Data.List as List
 
+-- See https://www.haskell.org/cabal/users-guide/developing-packages.html#accessing-data-files-from-package-code
+-- getDataFileName will return the correct path to data file portably
+import Paths_documentator (getDataFileName)
+
 ordNub :: (Ord a) => [a] -> [a]
 ordNub l = go Set.empty l
   where
@@ -25,6 +29,6 @@ unwrapParseOk :: ParseResult t -> t
 unwrapParseOk (ParseOk a) = a
 unwrapParseOk _ = error "Something went wrong in the parser"
 
-lensCabalFile, lensFileExample :: FilePath
-lensCabalFile = "/home/carlo/code/haskell/forks/lens-4.14/lens.cabal"
-lensFileExample = "/home/carlo/code/haskell/forks/lens-4.14/src/Control/Lens/Lens.hs"
+lensCabalFile, lensFileExample :: IO FilePath
+lensCabalFile   = getDataFileName "data/lens.cabal"
+lensFileExample = getDataFileName "data/Lens.hs"

@@ -39,8 +39,10 @@ badExtensions =
     ]
 
 -- g is a convenience function to use in ghci
-g :: Extractor b -> IO b
-g e = e <$> myParse lensFileExample
+g :: Extractor a -> IO a
+g e = do
+  lensFilePath <- lensFileExample
+  e <$> myParse lensFilePath
 
 pRaw :: (Show a) => Extractor [a] -> IO ()
 pRaw e = g e >>= mapM_ (\a -> print a >> putStrLn "\n")
