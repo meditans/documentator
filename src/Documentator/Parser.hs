@@ -79,8 +79,11 @@ instance {-# OVERLAPPING #-} Ord (Located QName) where
 tyConExtractor :: Extractor [Located QName]
 tyConExtractor = ordNub . sort . concatMap allTyCon . ordNub . typesExtractor
 
+allTypesExtractor :: Extractor [Located Type]
+allTypesExtractor = concatMap allTypes . typesExtractor 
+
 typeUsages :: Extractor [(Located Type, Int)]
-typeUsages =  sort . count . typesExtractor
+typeUsages =  sort . count . allTypesExtractor
 
 showTypeUsages :: Extractor [(Located Type, Int)] -> IO ()
 showTypeUsages e = g e >>= mapM_ (putStrLn . str)
