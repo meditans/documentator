@@ -1,4 +1,6 @@
-{-# LANGUAGE OverloadedStrings, ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Main where
 
@@ -12,17 +14,33 @@ import Data.String
 import Documentator.Parser
 import Documentator.Descriptors
 import Documentator.Utils      (lensFileExample)
+import Options.Generic
+import Preprocessor            (getExposedModulesPath)
+import Control.Monad           (unless)
+import System.Exit             (exitFailure)
+import System.Directory        (doesFileExist)
+
 import Language.Haskell.Exts.Pretty (prettyPrint)
 import Language.Haskell.Exts.Syntax
 
+data CmdOptions = CmdOptions { cabalPath :: FilePath }
+    deriving (Generic, Show)
+
+instance ParseRecord CmdOptions
+
 main :: IO ()
 main = do
-  filePath <- lensFileExample
-  mod <- myParse filePath
-  let topUsedTypes = typeUsages mod
-  report <- pure $ generateReport topUsedTypes
+  path <- cabalPath <$> getRecord "Documentator"
+  exists <- doesFileExist path
+  unless exists $ do
+    putStrLn $ path ++ " does not exist"
+    exitFailure
+  modulePaths <- getExposedModulesPath path
+  allTypes <- mapM myParse modulePaths
+  print allTypes
+  let topUsedTypes = foldMap typeUsages allTypes
+      report = generateReport topUsedTypes
   IO.writeFile "/tmp/report.html" report
-  putStrLn "generated /tmp/report.html"
   openBrowser "file:///tmp/report.html"
   return ()
 
@@ -32,19 +50,19 @@ generateReport = renderText . html
 type TopUsedTypes = [(Type (), Int)]
 
 html :: TopUsedTypes -> Html ()
-html topUsedTypes = 
-  html_( 
+html topUsedTypes =
+  html_(
     head_ [] (
       title_ "Automatic Documentation Generator" <>
       link_ [rel_ "stylesheet"
             , href_ "https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"]
       <> link_ [rel_ "stylesheet"
             , href_ "https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.css"
-            ] 
+            ]
       <> link_ [rel_ "stylesheet"
         , href_ "https://cdnjs.cloudflare.com/ajax/libs/milligram/1.1.0/milligram.css"
-        ] 
-    ) <> 
+        ]
+    ) <>
     body_ (
       section_ [class_ "container"](
         h2_ "Top used types"
