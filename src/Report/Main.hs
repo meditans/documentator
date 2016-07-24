@@ -13,17 +13,18 @@ import Data.String
 import Documentator.Parser
 import Documentator.Utils      (lensFileExample)
 
+main = return ()
 
 main :: IO ()
 main = do
-  filePath <- lensFileExample
-  mod <- myParse filePath
-  let topUsedTypes = typeUsages mod
-  report <- pure $ generateReport topUsedTypes
-  IO.writeFile "/tmp/report.html" report
-  putStrLn "generated /tmp/report.html"
-  openBrowser "file:///tmp/report.html"
-  return ()
+   filePath <- lensFileExample
+   mod <- myParse filePath
+   let topUsedTypes = typeUsages mod
+   report <- pure $ generateReport topUsedTypes
+   IO.writeFile "/tmp/report.html" report
+   putStrLn "generated /tmp/report.html"
+   openBrowser "file:///tmp/report.html"
+   return ()
 
 generateReport :: TopUsedTypes -> T.Text
 generateReport = renderText . html

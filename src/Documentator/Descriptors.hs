@@ -1,7 +1,10 @@
+{-# OPTIONS_GHC -fdefer-typed-holes #-}
+
 module Documentator.Descriptors where
 
 import Language.Haskell.Exts.Annotated.Syntax
 import Documentator.Types
+import Documentator.Utils
 
 allTyCon :: Located Type -> [Located QName]
 allTyCon (TyForall _ _ _ _) = []
@@ -21,8 +24,8 @@ allTyCon (TySplice _ _) = []
 allTyCon (TyBang _ _ t) = allTyCon t
 allTyCon (TyWildCard _ _) = []
 
-allTypes :: Located Type -> [Located Type]
-allTypes (TyForall _ _ _ t) = allTypes t
+allTypes :: Type () -> [Type ()]
+allTypes (TyForall _ c1 c2 t) = allTypes $ propagateContext c1 c2 (t)
 allTypes (TyFun _ t1 t2) = allTypes t1 ++ allTypes t2
 allTypes t@(TyTuple _ _ _) = [t]
 allTypes t@(TyList _ _) = [t]
@@ -38,6 +41,12 @@ allTypes t@(TyEquals _ _ _) = [t]
 allTypes t@(TySplice _ _) = [t]
 allTypes t@(TyBang _ _ _) = [t]
 allTypes t@(TyWildCard _ _) = [t]
+
+propagateContext :: (Maybe [TyVarBind l]) -> (Maybe (Context l)) -> Type () -> Type ()
+propagateContext _ _ t@(TyForall _ _ _ _) = t
+propagateContext c1 c2 (TyFun _ t1 t2) =
+  TyFun () (propagateContext c1 c2 t1) (propagateContext c1 c2 t2)
+propagateContext c1 c2 t = TyForall () ((fmap . fmap) clean c1) (fmap clean c2) t
 
 resultTyCon :: Located Type -> Located Type
 resultTyCon (TyForall _ _ _ t) = resultTyCon t
