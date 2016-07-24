@@ -70,14 +70,20 @@ typesExtractor = map getType . filter isTypeSig . typeSignaturesExtractor
 instance {-# OVERLAPPING #-} Ord (Located Type) where
   compare t1 t2 = compare (fmap (const ()) t1) (fmap (const ()) t2)
 
+instance {-# OVERLAPPING #-} Eq (Located Type) where
+   t1 == t2 = (fmap (const ()) t1) == (fmap (const ()) t2)
+
 instance {-# OVERLAPPING #-} Ord (Located QName) where
   compare qn1 qn2 = compare (fmap (const ()) qn1) (fmap (const ()) qn2)
 
 tyConExtractor :: Extractor [Located QName]
 tyConExtractor = ordNub . sort . concatMap allTyCon . ordNub . typesExtractor
 
+allTypesExtractor :: Extractor [Located Type]
+allTypesExtractor = concatMap allTypes . typesExtractor 
+
 typeUsages :: Extractor [(Located Type, Int)]
-typeUsages =  sort . count . typesExtractor
+typeUsages =  sort . count . allTypesExtractor
 
 showTypeUsages :: Extractor [(Located Type, Int)] -> IO ()
 showTypeUsages e = g e >>= mapM_ (putStrLn . str)
