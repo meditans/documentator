@@ -12,8 +12,7 @@ import Language.Haskell.Exts.Annotated
 import Data.String
 import Documentator.Parser
 import Documentator.Utils      (lensFileExample)
-
-main = return ()
+import Language.Haskell.Exts.Annotated.Simplify
 
 main :: IO ()
 main = do
@@ -29,7 +28,7 @@ main = do
 generateReport :: TopUsedTypes -> T.Text
 generateReport = renderText . html
 
-type TopUsedTypes = [(Located Type, Int)]
+type TopUsedTypes = [(Type (), Int)]
 
 html :: TopUsedTypes -> Html ()
 html topUsedTypes = 
@@ -55,7 +54,7 @@ html topUsedTypes =
   where rows = mconcat $ map row topUsedTypes
 
 
-row :: (Located Type, Int) -> Html ()
+row :: (Type (), Int) -> Html ()
 row (t, num) = tr_ (td_ typeNum <> td_ typeDesc)
-    where typeDesc = fromString (prettyPrint (fmap fst t))
+    where typeDesc = fromString (prettyPrint $ sType t)
           typeNum = fromString $ show num
