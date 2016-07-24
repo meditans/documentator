@@ -84,7 +84,7 @@ allTypesExtractor :: Extractor [Type ()]
 allTypesExtractor = concatMap (allTypes . clean) . typesExtractor
 
 typeUsages :: Extractor [(Type (), Int)]
-typeUsages =  reverse . sortBy (comparing snd) . count . allTypesExtractor
+typeUsages =  count . allTypesExtractor
 
 showTypeUsages :: Extractor [(Located Type, Int)] -> IO ()
 showTypeUsages e = g e >>= mapM_ (putStrLn . str)
