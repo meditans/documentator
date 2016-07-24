@@ -2,9 +2,8 @@ resolver: lts-6.3
 packages:
 - '.'
 - location:
-    '../preprocessor'
-    # git: https://github.com/meditans/preprocessor.git
-    # commit: 7f596ec5671ae29e42b336bbc703df1ebce03842
+    git: https://github.com/meditans/preprocessor.git
+    commit: c2d325b298e5f50a249868f6c503d8b9bc6041e0
   extra-dep: true
 extra-deps:
 - varying-0.5.0.0
