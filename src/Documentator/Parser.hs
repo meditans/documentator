@@ -97,3 +97,8 @@ instance {-# OVERLAPPING #-} SrcInfo (SrcSpanInfo, [Comment]) where
   fileName = fileName . fst
   startLine = startLine . fst
   startColumn = startColumn . fst
+
+typeFromString :: String -> Either String (Type ())
+typeFromString s = case parseType s of
+    ParseOk annType -> Right $ fmap (const ()) annType
+    ParseFailed _ err -> Left err
