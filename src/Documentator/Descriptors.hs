@@ -25,7 +25,7 @@ allTyCon (TyBang _ _ _ t) = allTyCon t
 allTyCon (TyWildCard _ _) = []
 
 allTypes :: Type () -> [Type ()]
-allTypes (TyForall _ c1 c2 t) = allTypes t
+allTypes (TyForall _ c1 c2 t) = map (propagateContext c1 c2) $ allTypes t
 allTypes (TyFun _ t1 t2) = allTypes t1 ++ allTypes t2
 allTypes t@(TyTuple _ _ _) = [t]
 allTypes t@(TyList _ _) = [t]
