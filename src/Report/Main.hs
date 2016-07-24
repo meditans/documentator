@@ -33,11 +33,11 @@ type TopUsedTypes = [(Located Type, Int)]
 html :: TopUsedTypes -> Html ()
 html topUsedTypes = h1_ "Automatic DOC generator" <>
   h2_ "Top used types"
-    <> table_ ( tr_ (th_ "Type Name" <> th_ "N. of Usages") <> rows)
+    <> table_ ( tr_ (th_ "No." <> th_ "Type Name") <> rows)
   where rows = mconcat $ map row topUsedTypes
 
 
 row :: (Located Type, Int) -> Html ()
-row (t, num) = tr_ (td_ firstColumn <> td_ secondColumn)
-    where firstColumn = fromString (prettyPrint (fmap fst t))
-          secondColumn = fromString $ show num
+row (t, num) = tr_ (td_ typeNum <> td_ typeDesc)
+    where typeDesc = fromString (prettyPrint (fmap fst t))
+          typeNum = fromString $ show num
