@@ -10,6 +10,7 @@ import Documentator.Utils
 
 import Language.Haskell.Exts
 import Language.Haskell.Exts.Parser
+import Language.Haskell.Exts.Fixity
 
 import Control.Lens
 import Data.List
@@ -18,8 +19,7 @@ import Data.Ord
 myParse :: FilePath -> IO (Module (SrcSpanInfo, [Comment]))
 myParse f = associateHaddock . unwrapParseOk . parseFileContentsWithComments parseMode <$> preprocessFile f
   where
-    parseMode = defaultParseMode { fixities = Just []
-                                 , extensions = defaultExtensions }
+    parseMode = defaultParseMode { fixities = Just baseFixities }
 
 -- The parser may fail for the absence of the right extensions. A common trick,
 -- used for example by hlint at
