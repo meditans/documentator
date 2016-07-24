@@ -8,22 +8,23 @@ import qualified Data.Text.Lazy.IO as IO
 import Web.Browser
 import Data.Monoid
 import Documentator.Types
-import Language.Haskell.Exts.Annotated
 import Data.String
 import Documentator.Parser
+import Documentator.Descriptors
 import Documentator.Utils      (lensFileExample)
-import Language.Haskell.Exts.Annotated.Simplify
+import Language.Haskell.Exts.Pretty (prettyPrint)
+import Language.Haskell.Exts.Syntax
 
 main :: IO ()
 main = do
-   filePath <- lensFileExample
-   mod <- myParse filePath
-   let topUsedTypes = typeUsages mod
-   report <- pure $ generateReport topUsedTypes
-   IO.writeFile "/tmp/report.html" report
-   putStrLn "generated /tmp/report.html"
-   openBrowser "file:///tmp/report.html"
-   return ()
+  filePath <- lensFileExample
+  mod <- myParse filePath
+  let topUsedTypes = typeUsages mod
+  report <- pure $ generateReport topUsedTypes
+  IO.writeFile "/tmp/report.html" report
+  putStrLn "generated /tmp/report.html"
+  openBrowser "file:///tmp/report.html"
+  return ()
 
 generateReport :: TopUsedTypes -> T.Text
 generateReport = renderText . html
@@ -56,5 +57,5 @@ html topUsedTypes =
 
 row :: (Type (), Int) -> Html ()
 row (t, num) = tr_ (td_ typeNum <> td_ typeDesc)
-    where typeDesc = fromString (prettyPrint $ sType t)
+    where typeDesc = fromString (prettyPrint t)
           typeNum = fromString $ show num

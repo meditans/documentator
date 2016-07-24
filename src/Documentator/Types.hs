@@ -1,7 +1,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Documentator.Types where
 
-import Language.Haskell.Exts.Annotated
+import Language.Haskell.Exts
+import Language.Haskell.Exts.Syntax
+import Language.Haskell.Exts.SrcLoc
 
 type Extractor a = Module (SrcSpanInfo, [Comment]) -> a
 
