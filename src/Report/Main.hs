@@ -13,7 +13,6 @@ import Documentator.Types
 import Data.String
 import Documentator.Parser
 import Documentator.Descriptors
-import Documentator.Utils      (lensFileExample)
 import Options.Generic
 import Preprocessor            (getExposedModulesPath)
 import Control.Monad           (unless)
@@ -36,9 +35,8 @@ main = do
     putStrLn $ path ++ " does not exist"
     exitFailure
   modulePaths <- getExposedModulesPath path
-  allTypes <- mapM myParse modulePaths
-  print allTypes
-  let topUsedTypes = foldMap typeUsages allTypes
+  parsedModules <- mapM myParse modulePaths
+  let topUsedTypes = foldMap typeUsages parsedModules
       report = generateReport topUsedTypes
   IO.writeFile "/tmp/report.html" report
   openBrowser "file:///tmp/report.html"
