@@ -14,6 +14,7 @@ import Language.Haskell.Exts.Fixity
 
 import Control.Lens
 import Data.List
+import Data.Ord
 
 myParse :: FilePath -> IO (Module (SrcSpanInfo, [Comment]))
 myParse f = associateHaddock . unwrapParseOk . parseFileContentsWithComments parseMode <$> preprocessFile f
@@ -83,7 +84,7 @@ allTypesExtractor :: Extractor [Type ()]
 allTypesExtractor = concatMap (allTypes . clean) . typesExtractor
 
 typeUsages :: Extractor [(Type (), Int)]
-typeUsages =  sort . count . allTypesExtractor
+typeUsages =  reverse . sortBy (comparing snd) . count . allTypesExtractor
 
 showTypeUsages :: Extractor [(Located Type, Int)] -> IO ()
 showTypeUsages e = g e >>= mapM_ (putStrLn . str)
