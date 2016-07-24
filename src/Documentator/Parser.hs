@@ -12,14 +12,17 @@ import Language.Haskell.Exts
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Fixity
 
+import Control.Exception
+
 import Control.Lens
 import Data.List
-import Data.Ord
 
-myParse :: FilePath -> IO (Module (SrcSpanInfo, [Comment]))
-myParse f = associateHaddock . unwrapParseOk . parseFileContentsWithComments parseMode <$> preprocessFile f
+myParse :: FilePath -> IO (Either String (Located Module))
+myParse f = fmap associateHaddock . unwrapParseOk . parseFileContentsWithComments parseMode <$> preprocessFile f
   where
-    parseMode = defaultParseMode { fixities = Just baseFixities }
+    parseMode = defaultParseMode { fixities = Nothing
+                                 , extensions = defaultExtensions
+                                 }
 
 -- The parser may fail for the absence of the right extensions. A common trick,
 -- used for example by hlint at
@@ -39,17 +42,17 @@ badExtensions =
     , DoRec, RecursiveDo -- breaks rec
     ]
 
--- g is a convenience function to use in ghci
-g :: Extractor a -> IO a
-g e = do
-  lensFilePath <- lensFileExample
-  e <$> myParse lensFilePath
+-- -- g is a convenience function to use in ghci
+-- g :: Extractor a -> IO a
+-- g e = do
+--   lensFilePath <- lensFileExample
+--   e <$> myParse lensFilePath
 
-pRaw :: (Show a) => Extractor [a] -> IO ()
-pRaw e = g e >>= mapM_ (\a -> print a >> putStrLn "\n")
+-- pRaw :: (Show a) => Extractor [a] -> IO ()
+-- pRaw e = g e >>= mapM_ (\a -> print a >> putStrLn "\n")
 
-p :: (Pretty a) => Extractor [a] -> IO ()
-p e = g e >>= mapM_ (putStrLn . prettyPrint)
+-- p :: (Pretty a) => Extractor [a] -> IO ()
+-- p e = g e >>= mapM_ (putStrLn . prettyPrint)
 
 isTypeSig :: Decl (SrcSpanInfo, [Comment]) -> Bool
 isTypeSig (TypeSig _ _ _) = True
@@ -84,12 +87,12 @@ allTypesExtractor :: Extractor [Type ()]
 allTypesExtractor = concatMap (allTypes . clean) . typesExtractor
 
 typeUsages :: Extractor [(Type (), Int)]
-typeUsages =  reverse . sortBy (comparing snd) . count . allTypesExtractor
+typeUsages =  sort . count . allTypesExtractor
 
-showTypeUsages :: Extractor [(Located Type, Int)] -> IO ()
-showTypeUsages e = g e >>= mapM_ (putStrLn . str)
-  where
-    str (t, num) = (prettyPrint (fmap fst t)) ++ " " ++ show num
+-- showTypeUsages :: Extractor [(Located Type, Int)] -> IO ()
+-- showTypeUsages e = g e >>= mapM_ (putStrLn . str)
+--   where
+--     str (t, num) = (prettyPrint (fmap fst t)) ++ " " ++ show num
 
 resultTypeExtractor :: Extractor [Located Type]
 resultTypeExtractor = map resultTyCon . ordNub . typesExtractor

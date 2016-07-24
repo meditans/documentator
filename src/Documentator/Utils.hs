@@ -25,9 +25,13 @@ ordNub l = go Set.empty l
 count :: (Ord a) => [a] -> [(a, Int)]
 count = map (\xs@(x:_) -> (x, length xs)) . List.group . List.sort
 
-unwrapParseOk :: ParseResult t -> t
-unwrapParseOk (ParseOk a) = a
-unwrapParseOk _ = error "Something went wrong in the parser"
+unwrapParseOk :: ParseResult t -> Either String t
+unwrapParseOk (ParseOk a) = Right a
+unwrapParseOk (ParseFailed loc str) = Left $ "Something went wrong in the parser at " ++ show loc ++ "\nThe error was " ++ str
+
+isParseOk :: ParseResult t -> Bool
+isParseOk (ParseOk a) = True
+isParseOk _ = False
 
 lensCabalFile, lensFileExample :: IO FilePath
 lensCabalFile   = getDataFileName "data/lens.cabal"

@@ -18,6 +18,7 @@ import Preprocessor            (getExposedModulesPath)
 import Control.Monad           (unless)
 import System.Exit             (exitFailure)
 import System.Directory        (doesFileExist)
+import Data.Either (rights)
 
 import Language.Haskell.Exts.Pretty (prettyPrint)
 import Language.Haskell.Exts.Syntax
@@ -35,7 +36,7 @@ main = do
     putStrLn $ path ++ " does not exist"
     exitFailure
   modulePaths <- getExposedModulesPath path
-  parsedModules <- mapM myParse modulePaths
+  parsedModules <- rights <$> mapM myParse modulePaths
   let topUsedTypes = foldMap typeUsages parsedModules
       report = generateReport topUsedTypes
   IO.writeFile "/tmp/report.html" report
