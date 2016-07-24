@@ -8,8 +8,8 @@ import Documentator.Descriptors
 import Documentator.Types
 import Documentator.Utils
 
-import Language.Haskell.Exts.Annotated
-import Language.Haskell.Exts.Annotated.Parser
+import Language.Haskell.Exts
+import Language.Haskell.Exts.Parser
 
 import Control.Lens
 import Data.List

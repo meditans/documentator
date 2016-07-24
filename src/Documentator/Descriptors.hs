@@ -2,7 +2,7 @@
 
 module Documentator.Descriptors where
 
-import Language.Haskell.Exts.Annotated.Syntax
+import Language.Haskell.Exts.Syntax
 import Documentator.Types
 import Documentator.Utils
 
@@ -21,7 +21,7 @@ allTyCon (TyKind _ t _) = allTyCon t
 allTyCon (TyPromoted _ _) = []
 allTyCon (TyEquals _ _ _) = []
 allTyCon (TySplice _ _) = []
-allTyCon (TyBang _ _ t) = allTyCon t
+allTyCon (TyBang _ _ _ t) = allTyCon t
 allTyCon (TyWildCard _ _) = []
 
 allTypes :: Type () -> [Type ()]
@@ -39,7 +39,7 @@ allTypes (TyKind _ t _) = allTypes t
 allTypes t@(TyPromoted _ _) = [t]
 allTypes t@(TyEquals _ _ _) = [t]
 allTypes t@(TySplice _ _) = [t]
-allTypes t@(TyBang _ _ _) = [t]
+allTypes t@(TyBang _ _ _ _) = [t]
 allTypes t@(TyWildCard _ _) = [t]
 
 propagateContext :: (Maybe [TyVarBind l]) -> (Maybe (Context l)) -> Type () -> Type ()
@@ -63,7 +63,7 @@ resultTyCon (TyKind _ t _) = resultTyCon t
 resultTyCon t@(TyPromoted _ _) = t
 resultTyCon t@(TyEquals _ _ _) = t
 resultTyCon t@(TySplice _ _) = t
-resultTyCon t@(TyBang _ _ _) = t
+resultTyCon t@(TyBang _ _ _ _) = t
 resultTyCon t@(TyWildCard _ _) = t
 
 argumentsTyCon :: Located Type -> [Located Type]
@@ -81,7 +81,7 @@ argumentsTyCon (TyKind _ t _) = argumentsTyCon t
 argumentsTyCon t@(TyPromoted _ _) = [t]
 argumentsTyCon t@(TyEquals _ _ _) = [t]
 argumentsTyCon t@(TySplice _ _) = [t]
-argumentsTyCon t@(TyBang _ _ _) = [t]
+argumentsTyCon t@(TyBang _ _ _ _) = [t]
 argumentsTyCon t@(TyWildCard _ _) = [t]
 
 isTyFun :: Located Type -> Bool
