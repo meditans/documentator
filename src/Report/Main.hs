@@ -18,6 +18,8 @@ import Preprocessor            (getExposedModulesPath)
 import Control.Monad           (unless)
 import System.Exit             (exitFailure)
 import System.Directory        (doesFileExist)
+import Data.List               (sortBy)
+import Data.Ord                (comparing)
 
 import Language.Haskell.Exts.Pretty (prettyPrint)
 import Language.Haskell.Exts.Syntax
@@ -37,7 +39,7 @@ main = do
   modulePaths <- getExposedModulesPath path
   parsedModules <- mapM myParse modulePaths
   let topUsedTypes = foldMap typeUsages parsedModules
-      report = generateReport topUsedTypes
+      report = generateReport (reverse . sortBy (comparing snd) $ topUsedTypes)
   IO.writeFile "/tmp/report.html" report
   openBrowser "file:///tmp/report.html"
   return ()
