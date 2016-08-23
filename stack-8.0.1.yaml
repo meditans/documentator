@@ -4,7 +4,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/meditans/preprocessor.git
-    commit: c2d325b298e5f50a249868f6c503d8b9bc6041e0
+    commit: a82f7efc28ea1df91f9e2aca9aa7842f74c35600
   extra-dep: true
 extra-deps:
 - haskell-src-exts-1.18.0
