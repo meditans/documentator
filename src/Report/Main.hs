@@ -1,26 +1,25 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ExtendedDefaultRules #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, ExtendedDefaultRules, OverloadedStrings #-}
 
 module Main where
 
-import Lucid
-import qualified Data.Text.Lazy as T
-import qualified Data.Text.Lazy.IO as IO
-import Web.Browser
-import Data.Monoid
-import Documentator.Types
-import Data.String
-import Documentator.Parser
-import Documentator.Descriptors
-import Options.Generic
-import Preprocessor            (getExposedModulesPath)
-import Control.Monad           (unless)
-import System.Exit             (exitFailure)
-import System.Directory        (doesFileExist)
-import Data.Either (rights)
-import Data.List               (sortBy)
-import Data.Ord                (comparing)
+import           Control.Monad            (unless)
+import           Data.Either              (isLeft, lefts, rights)
+import           Data.List
+import           Data.Monoid
+import           Data.Ord
+import           Data.String
+import qualified Data.Text.Lazy           as T
+import qualified Data.Text.Lazy.IO        as IO
+import           Documentator.Descriptors
+import           Documentator.Parser
+import           Documentator.Types
+import           Lucid
+import           Options.Generic
+import           Preprocessor             (getLibExposedModulesPath)
+import           System.Directory         (doesFileExist)
+import           System.Exit              (exitFailure)
+import           Web.Browser
+import Control.Arrow ((&&&))
 
 import Language.Haskell.Exts.Pretty (prettyPrint)
 import Language.Haskell.Exts.Syntax
@@ -37,9 +36,18 @@ main = do
   unless exists $ do
     putStrLn $ path ++ " does not exist"
     exitFailure
-  modulePaths <- getExposedModulesPath path
-  parsedModules <- rights <$> mapM myParse modulePaths
-  let topUsedTypes = foldMap typeUsages parsedModules
+  modulePaths <- getLibExposedModulesPath path
+  parsedModules <- mapM myParse modulePaths
+  let parsedModulesWithPath = zip modulePaths parsedModules
+  if any isLeft parsedModules
+    then do
+      putStrLn "I cannot parse the following modules: "
+      -- mapM_ print (lefts parsedModules)
+      let errors = filter (isLeft . snd) parsedModulesWithPath
+      mapM_ print errors
+      writeFile "tmpParsed" $ show $ head errors
+    else putStrLn "All modules parsed"
+  let topUsedTypes = foldMap typeUsages (rights parsedModules)
       report = generateReport (reverse . sortBy (comparing snd) $ topUsedTypes)
   IO.writeFile "/tmp/report.html" report
   openBrowser "file:///tmp/report.html"

@@ -25,7 +25,6 @@ library
                      , preprocessor
                      , haskell-src-exts
                      , lens
-                     , varying
                      , text
                      , containers
                      , lucid
@@ -40,7 +39,6 @@ executable documentator-exe
                      , documentator
                      , haskell-src-exts
                      , lens
-                     , varying
                      , text
                      , lucid
                      , preprocessor

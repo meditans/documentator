@@ -19,10 +19,10 @@ import Data.List
 
 myParse :: FilePath -> IO (Either String (Located Module))
 myParse f = fmap associateHaddock . unwrapParseOk . parseFileContentsWithComments parseMode <$> preprocessFile f
-  where
-    parseMode = defaultParseMode { fixities = Nothing
-                                 , extensions = defaultExtensions
-                                 }
+
+parseMode = defaultParseMode { fixities = Nothing
+                             , extensions = defaultExtensions
+                             }
 
 -- The parser may fail for the absence of the right extensions. A common trick,
 -- used for example by hlint at
