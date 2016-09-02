@@ -1,12 +1,8 @@
-resolver: lts-6.3
+resolver: lts-6.4
 packages:
 - '.'
-- location:
-    # git: https://github.com/meditans/preprocessor.git
-    # commit: a82f7efc28ea1df91f9e2aca9aa7842f74c35600
-    '../preprocessor'
-  extra-dep: true
 extra-deps:
+- preprocessor-0.1.0.0
 - haskell-src-exts-1.18.2
 flags: {}
 extra-package-dbs: []

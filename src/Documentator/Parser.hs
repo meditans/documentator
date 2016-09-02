@@ -3,7 +3,7 @@
 
 module Documentator.Parser where
 
-import Preprocessor
+import Language.C.Preprocessor.Remover
 import Documentator.Descriptors
 import Documentator.Types
 import Documentator.Utils

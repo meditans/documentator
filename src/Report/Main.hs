@@ -15,7 +15,7 @@ import           Documentator.Parser
 import           Documentator.Types
 import           Lucid
 import           Options.Generic
-import           Preprocessor             (getLibExposedModulesPath)
+import           Language.C.Preprocessor.Remover             (getLibExposedModulesPath)
 import           System.Directory         (doesFileExist)
 import           System.Exit              (exitFailure)
 import           Web.Browser
