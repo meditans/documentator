@@ -17,8 +17,13 @@ import Control.Exception
 import Control.Lens
 import Data.List
 
+-- | This function, give a filepath, will try to interpret it as a Located
+-- Module
 myParse :: FilePath -> IO (Either String (Located Module))
-myParse f = fmap associateHaddock . unwrapParseOk . parseFileContentsWithComments parseMode <$> preprocessFile f
+myParse f =
+  fmap associateHaddock .
+  unwrapParseOk . parseFileContentsWithComments parseMode <$>
+  preprocessFile f
 
 parseMode = defaultParseMode { fixities = Nothing
                              , extensions = defaultExtensions
@@ -42,35 +47,31 @@ badExtensions =
     , DoRec, RecursiveDo -- breaks rec
     ]
 
--- -- g is a convenience function to use in ghci
--- g :: Extractor a -> IO a
--- g e = do
---   lensFilePath <- lensFileExample
---   e <$> myParse lensFilePath
-
--- pRaw :: (Show a) => Extractor [a] -> IO ()
--- pRaw e = g e >>= mapM_ (\a -> print a >> putStrLn "\n")
-
--- p :: (Pretty a) => Extractor [a] -> IO ()
--- p e = g e >>= mapM_ (putStrLn . prettyPrint)
-
-isTypeSig :: Decl (SrcSpanInfo, [Comment]) -> Bool
+isTypeSig :: Located Decl -> Bool
 isTypeSig (TypeSig _ _ _) = True
 isTypeSig _               = False
 
----------------------------------------------------------------- Extractors
+--------------------------------------------------------------------------------
+-- Common Extractors
+--------------------------------------------------------------------------------
 
+-- | This function gets the typesignatures of a module, i.e. those in the form
+-- @foo :: Type@
 typeSignaturesExtractor :: Extractor [Located Decl]
 typeSignaturesExtractor = filter isTypeSig . declarations
   where
     declarations :: Module t -> [Decl t]
     declarations (Module _ _ _ _ ds) = ds
 
+-- | This function gets all the types, i.e. the typesignatures without the name
+-- to which the type is bound.
 typesExtractor :: Extractor [Located Type]
 typesExtractor = map getType . filter isTypeSig . typeSignaturesExtractor
   where
     getType (TypeSig _ _ t) = t
 
+
+-- | This ord instances are useful because ...
 instance {-# OVERLAPPING #-} Ord (Located Type) where
   compare t1 t2 = compare (fmap (const ()) t1) (fmap (const ()) t2)
 
@@ -80,19 +81,15 @@ instance {-# OVERLAPPING #-} Eq (Located Type) where
 instance {-# OVERLAPPING #-} Ord (Located QName) where
   compare qn1 qn2 = compare (fmap (const ()) qn1) (fmap (const ()) qn2)
 
+
 tyConExtractor :: Extractor [Located QName]
 tyConExtractor = ordNub . sort . concatMap allTyCon . ordNub . typesExtractor
 
-allTypesExtractor :: Extractor [Type ()]
+allTypesExtractor :: Extractor [Bare Type]
 allTypesExtractor = concatMap (allTypes . clean) . typesExtractor
 
-typeUsages :: Extractor [(Type (), Int)]
+typeUsages :: Extractor [(Bare Type, Int)]
 typeUsages =  count . allTypesExtractor
-
--- showTypeUsages :: Extractor [(Located Type, Int)] -> IO ()
--- showTypeUsages e = g e >>= mapM_ (putStrLn . str)
---   where
---     str (t, num) = (prettyPrint (fmap fst t)) ++ " " ++ show num
 
 resultTypeExtractor :: Extractor [Located Type]
 resultTypeExtractor = map resultTyCon . ordNub . typesExtractor
@@ -108,7 +105,7 @@ instance {-# OVERLAPPING #-} SrcInfo (SrcSpanInfo, [Comment]) where
   startLine = startLine . fst
   startColumn = startColumn . fst
 
-typeFromString :: String -> Either String (Type ())
+typeFromString :: String -> Either String (Bare Type)
 typeFromString s = case parseType s of
     ParseOk annType -> Right $ fmap (const ()) annType
     ParseFailed _ err -> Left err

@@ -6,6 +6,7 @@ import Language.Haskell.Exts.Syntax
 import Documentator.Types
 import Documentator.Utils
 
+-- | Returns all the qualified variables and constructors in a type
 allTyCon :: Located Type -> [Located QName]
 allTyCon (TyForall _ _ _ _) = []
 allTyCon (TyFun _ t1 t2) = allTyCon t1 ++ allTyCon t2
@@ -24,7 +25,9 @@ allTyCon (TySplice _ _) = []
 allTyCon (TyBang _ _ _ t) = allTyCon t
 allTyCon (TyWildCard _ _) = []
 
-allTypes :: Type () -> [Type ()]
+-- | This function returns, from a type, all the internal types, with propagated
+-- contexts.
+allTypes :: Bare Type -> [Bare Type]
 allTypes (TyForall _ c1 c2 t) = map (propagateContext c1 c2) $ allTypes t
 allTypes (TyFun _ t1 t2) = allTypes t1 ++ allTypes t2
 allTypes t@(TyTuple _ _ _) = [t]
@@ -42,7 +45,7 @@ allTypes t@(TySplice _ _) = [t]
 allTypes t@(TyBang _ _ _ _) = [t]
 allTypes t@(TyWildCard _ _) = [t]
 
-propagateContext :: (Maybe [TyVarBind l]) -> (Maybe (Context l)) -> Type () -> Type ()
+propagateContext :: (Maybe [TyVarBind l]) -> (Maybe (Context l)) -> Bare Type -> Bare Type
 propagateContext _ _ t@(TyForall _ _ _ _) = t
 propagateContext c1 c2 (TyFun _ t1 t2) =
   TyFun () (propagateContext c1 c2 t1) (propagateContext c1 c2 t2)
