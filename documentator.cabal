@@ -11,8 +11,6 @@ copyright:           2015 Carlo Nucera
 category:            tutorial
 build-type:          Simple
 cabal-version:       >=1.10
-data-files:          data/lens.cabal
-                   , data/Lens.hs
 
 library
   hs-source-dirs:  src
