@@ -18,6 +18,8 @@ library
                  , Documentator.Types
                  , Documentator.Utils
                  , Documentator.Descriptors
+                 , Documentator.TypeAnalysis
+                 , Documentator.DataDeclAnalysis
   other-modules: Paths_documentator
   build-depends:       base >= 4.7 && < 5
                      , preprocessor

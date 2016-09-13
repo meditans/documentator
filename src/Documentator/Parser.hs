@@ -3,14 +3,15 @@
 
 module Documentator.Parser where
 
-import Language.C.Preprocessor.Remover
 import Documentator.Descriptors
 import Documentator.Types
 import Documentator.Utils
+import Documentator.TypeAnalysis
+import Language.C.Preprocessor.Remover
 
 import Language.Haskell.Exts
-import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Fixity
+import Language.Haskell.Exts.Parser
 
 import Control.Exception
 
@@ -81,7 +82,6 @@ instance {-# OVERLAPPING #-} Eq (Located Type) where
 instance {-# OVERLAPPING #-} Ord (Located QName) where
   compare qn1 qn2 = compare (fmap (const ()) qn1) (fmap (const ()) qn2)
 
-
 tyConExtractor :: Extractor [Located QName]
 tyConExtractor = ordNub . sort . concatMap allTyCon . ordNub . typesExtractor
 
@@ -89,7 +89,7 @@ allTypesExtractor :: Extractor [Bare Type]
 allTypesExtractor = concatMap (allTypes . clean) . typesExtractor
 
 typeUsages :: Extractor [(Bare Type, Int)]
-typeUsages =  count . allTypesExtractor
+typeUsages = count . allTypesExtractor
 
 resultTypeExtractor :: Extractor [Located Type]
 resultTypeExtractor = map resultTyCon . ordNub . typesExtractor
@@ -107,5 +107,15 @@ instance {-# OVERLAPPING #-} SrcInfo (SrcSpanInfo, [Comment]) where
 
 typeFromString :: String -> Either String (Bare Type)
 typeFromString s = case parseType s of
-    ParseOk annType -> Right $ fmap (const ()) annType
+    ParseOk annType   -> Right $ clean annType
     ParseFailed _ err -> Left err
+
+--------------------------------------------------------------------------------
+-- New extractors
+--------------------------------------------------------------------------------
+
+bareTypesExtractor :: Extractor [Bare Type]
+bareTypesExtractor = map clean . typesExtractor
+
+componentsExtractor :: Extractor [Bare Component]
+componentsExtractor = concatMap components . bareTypesExtractor

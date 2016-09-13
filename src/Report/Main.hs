@@ -13,53 +13,50 @@ import qualified Data.Text.Lazy.IO        as IO
 import           Documentator.Descriptors
 import           Documentator.Parser
 import           Documentator.Types
-import           Lucid
-import           Options.Generic
-import           Language.C.Preprocessor.Remover             (getLibExposedModulesPath)
-import           System.Directory         (doesFileExist)
-import           System.Exit              (exitFailure)
-import           Web.Browser
-import Control.Arrow ((&&&))
+import           Documentator.Utils
+
+import Control.Arrow                   ((&&&))
+import Language.C.Preprocessor.Remover (getLibExposedModulesPath)
+import Lucid
+import Options.Generic
+import System.Directory                (doesFileExist)
+import System.Exit                     (exitFailure)
+import Web.Browser
 
 import Language.Haskell.Exts.Pretty (prettyPrint)
 import Language.Haskell.Exts.Syntax
 
-data CmdOptions = CmdOptions { cabalPath :: FilePath }
-    deriving (Generic, Show)
-
-instance ParseRecord CmdOptions
-
 main :: IO ()
 main = do
-  path <- cabalPath <$> getRecord "Documentator"
+  path <- getRecord "Documentator"
   exists <- doesFileExist path
   unless exists $ do
     putStrLn $ path ++ " does not exist"
     exitFailure
-  modulePaths <- getLibExposedModulesPath path
+  modulePaths <- filter (not . isInfixOf "Internal") <$> getLibExposedModulesPath path
   parsedModules <- mapM myParse modulePaths
-  let parsedModulesWithPath = zip modulePaths parsedModules
-  if any isLeft parsedModules
-    then do
-      putStrLn "I cannot parse the following modules: "
-      -- mapM_ print (lefts parsedModules)
-      let errors = filter (isLeft . snd) parsedModulesWithPath
-      mapM_ print errors
-      writeFile "tmpParsed" $ show $ head errors
-    else putStrLn "All modules parsed"
-  let topUsedTypes = foldMap typeUsages (rights parsedModules)
-      report = generateReport (reverse . sortBy (comparing snd) $ topUsedTypes)
+  -- let parsedModulesWithPath = zip modulePaths parsedModules
+  -- if any isLeft parsedModules
+  --   then do
+  --     putStrLn "I cannot parse the following modules: "
+  --     -- mapM_ print (lefts parsedModules)
+  --     let errors = filter (isLeft . snd) parsedModulesWithPath
+  --     mapM_ print errors
+  --     writeFile "tmpParsed" $ show $ head errors
+  --   else putStrLn "All modules parsed"
+  let mostUsedTypes = count . foldMap componentsExtractor $ rights parsedModules
+      report = generateReport (reverse . sortBy (comparing snd) $ mostUsedTypes)
   IO.writeFile "/tmp/report.html" report
   openBrowser "file:///tmp/report.html"
   return ()
 
-generateReport :: TopUsedTypes -> T.Text
+generateReport :: Counted (Bare Type) -> T.Text
 generateReport = renderText . html
 
-type TopUsedTypes = [(Type (), Int)]
+type Counted a = [(a, Int)]
 
-html :: TopUsedTypes -> Html ()
-html topUsedTypes =
+html :: Counted (Bare Type) -> Html ()
+html mostUsedTypes =
   html_(
     head_ [] (
       title_ "Automatic Documentation Generator" <>
@@ -74,15 +71,14 @@ html topUsedTypes =
     ) <>
     body_ (
       section_ [class_ "container"](
-        h2_ "Top used types"
-          <> table_ ( tr_ (th_ "No. of usages" <> th_ "Type Name") <> rows)
+        h2_ "Most used component in types"
+          <> table_ ( tr_ (th_ "No. of usages" <> th_ "Type Name" <> th_ "Raw type") <> rows)
       )
     )
   )
-  where rows = mconcat $ map row topUsedTypes
+  where rows = mconcat $ map row mostUsedTypes
 
-
-row :: (Type (), Int) -> Html ()
-row (t, num) = tr_ (td_ typeNum <> td_ typeDesc)
+row :: (Bare Type, Int) -> Html ()
+row (t, num) = tr_ (td_ typeNum <> td_ typeDesc <> td_ (fromString $ show t))
     where typeDesc = fromString (prettyPrint t)
-          typeNum = fromString $ show num
+          typeNum  = fromString (show num)

@@ -1,9 +1,13 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fdefer-typed-holes #-}
 
 module Documentator.Utils where
 
 import qualified Data.Set as Set
 import Documentator.Types
+
+import Control.Lens.TH
+import Control.Arrow
 
 import Language.Haskell.Exts
 import Language.Haskell.Exts.Parser
@@ -23,7 +27,7 @@ ordNub l = go Set.empty l
                                       else x : go (Set.insert x s) xs
 
 count :: (Ord a) => [a] -> [(a, Int)]
-count = map (\xs@(x:_) -> (x, length xs)) . List.group . List.sort
+count = map (head &&& length) . List.group . List.sort
 
 unwrapParseOk :: ParseResult t -> Either String t
 unwrapParseOk (ParseOk a) = Right a
@@ -36,3 +40,9 @@ isParseOk _ = False
 lensCabalFile, lensFileExample :: IO FilePath
 lensCabalFile   = getDataFileName "data/lens.cabal"
 lensFileExample = getDataFileName "data/Lens.hs"
+
+--------------------------------------------------------------------------------
+-- Additional lenses
+--------------------------------------------------------------------------------
+
+makePrisms ''Type
