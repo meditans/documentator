@@ -4,5 +4,6 @@ packages:
 extra-deps:
 - preprocessor-0.1.0.0
 - haskell-src-exts-1.18.2
+- haskell-names-0.8.0
 flags: {}
 extra-package-dbs: []

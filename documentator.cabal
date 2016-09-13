@@ -28,6 +28,8 @@ library
                      , text
                      , containers
                      , lucid
+                     , groom
+                     , haskell-names
   default-language:    Haskell2010
 
 executable documentator-exe
@@ -44,6 +46,12 @@ executable documentator-exe
                      , preprocessor
                      , open-browser
                      , optparse-generic
+                     , random
+                     , groom
+                     , containers
+                     , haskell-names
+                     , temporary
+                     , directory
   default-language:    Haskell2010
 
 test-suite documentator-test

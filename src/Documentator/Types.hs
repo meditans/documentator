@@ -19,6 +19,9 @@ type Commented a = a [Comment]
 -- want to mantain the thing without metadata.
 type Bare a = a ()
 
+-- | Sometimes we want to provide a counted summary of a datatype
+type Counted a = [(a, Int)]
+
 -- | An extractor is a function that gets something from the result of
 -- `parseContentWithComments`
 type Extractor a = Located Module -> a

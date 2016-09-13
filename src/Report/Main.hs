@@ -2,74 +2,82 @@
 
 module Main where
 
-import           Control.Monad            (unless)
-import           Data.Either              (isLeft, lefts, rights)
-import           Data.List
-import           Data.Monoid
-import           Data.Ord
-import           Data.String
-import qualified Data.Text.Lazy           as T
-import qualified Data.Text.Lazy.IO        as IO
-import           Documentator.Descriptors
-import           Documentator.Parser
-import           Documentator.Types
-import           Documentator.Utils
+import Documentator.Descriptors
+import Documentator.Parser
+import Documentator.Types
+import Documentator.Utils
 
-import Control.Arrow                   ((&&&))
-import Language.C.Preprocessor.Remover (getLibExposedModulesPath)
+import           Control.Arrow    ((&&&))
+import           Control.Monad    (unless, void)
+import           Data.Either      (rights)
+import           Data.List        (isInfixOf, sortBy)
+import qualified Data.Map         as M
+import           Data.Monoid      ((<>))
+import           Data.Ord         (comparing)
+import           Data.String      (fromString)
+import qualified Data.Text        as T
+import qualified Data.Text.IO     as T
+import           Data.Text.Lazy   (toStrict)
+import           System.Directory (doesFileExist, getCurrentDirectory)
+import           System.Exit      (exitFailure)
+import           System.IO.Temp   (openTempFile)
+
 import Lucid
-import Options.Generic
-import System.Directory                (doesFileExist)
-import System.Exit                     (exitFailure)
-import Web.Browser
+import Options.Generic (getRecord)
+import Web.Browser     (openBrowser)
 
-import Language.Haskell.Exts.Pretty (prettyPrint)
-import Language.Haskell.Exts.Syntax
+import Language.C.Preprocessor.Remover (getLibExposedModulesPath)
+import Language.Haskell.Exts.Pretty    (prettyPrint)
+import Language.Haskell.Exts.Syntax    (Type (..))
+import Language.Haskell.Names          (ppSymbol, resolve)
 
 main :: IO ()
 main = do
   path <- getRecord "Documentator"
+
   exists <- doesFileExist path
   unless exists $ do
     putStrLn $ path ++ " does not exist"
     exitFailure
+
   modulePaths <- filter (not . isInfixOf "Internal") <$> getLibExposedModulesPath path
-  parsedModules <- mapM myParse modulePaths
-  -- let parsedModulesWithPath = zip modulePaths parsedModules
-  -- if any isLeft parsedModules
-  --   then do
-  --     putStrLn "I cannot parse the following modules: "
-  --     -- mapM_ print (lefts parsedModules)
-  --     let errors = filter (isLeft . snd) parsedModulesWithPath
-  --     mapM_ print errors
-  --     writeFile "tmpParsed" $ show $ head errors
-  --   else putStrLn "All modules parsed"
-  let mostUsedTypes = count . foldMap componentsExtractor $ rights parsedModules
-      report = generateReport (reverse . sortBy (comparing snd) $ mostUsedTypes)
-  IO.writeFile "/tmp/report.html" report
-  openBrowser "file:///tmp/report.html"
-  return ()
+  parsedModules <- rights <$> mapM myParse modulePaths
 
-generateReport :: Counted (Bare Type) -> T.Text
-generateReport = renderText . html
+  let
+    mostUsedTypes = reverse . sortBy (comparing snd) . count . foldMap componentsExtractor $ parsedModules
+    typesReport = genericHtml "Most frequently used components in types" (toTable mostUsedTypes)
 
-type Counted a = [(a, Int)]
+    environment = resolve parsedModules M.empty
+    symbols = concat (M.elems environment)
+    symbolsReport = genericHtml "Symbols" $
+                    mconcat . map (ul_ . fromString . ppSymbol) $ symbols
 
-html :: Counted (Bare Type) -> Html ()
-html mostUsedTypes =
+  mapM_ display [typesReport, symbolsReport]
+
+display :: Html () -> IO ()
+display html = do
+  (f, h) <- openTempFile "documentator" "documentator.html"
+  T.hPutStrLn h (toStrict . renderText $ html)
+  curr <- getCurrentDirectory
+  void $ openBrowser $ "file://" ++ curr ++ "/" ++ f
+
+toTable :: Counted (Bare Type) -> Html ()
+toTable mostUsedTypes = table_ $ do
+  tr_ (th_ "No. of usages" <> th_ "Type Name" <> th_ "Raw type")
+  mconcat $ flip map mostUsedTypes $ \(t,num) -> tr_ $ do
+    td_ $ fromString (show num)
+    td_ $ fromString (prettyPrint t)
+    td_ $ fromString (show t)
+
+genericHtml :: Html () -> Html () -> Html ()
+genericHtml desc inner = do
   html_ $ do
     head_ [] $ do
-      title_ "Automatic Documentation Generator"
+      title_ desc
       link_ [rel_ "stylesheet", href_ "https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"]
       link_ [rel_ "stylesheet", href_ "https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.css"]
       link_ [rel_ "stylesheet", href_ "https://cdnjs.cloudflare.com/ajax/libs/milligram/1.1.0/milligram.css"]
     body_ $ do
       section_ [class_ "container"] $ do
-        h2_ "Most frequently used component in types"
-        table_ ( tr_ (th_ "No. of usages" <> th_ "Type Name" <> th_ "Raw type") <> rows)
-  where rows = mconcat $ map row mostUsedTypes
-
-row :: (Bare Type, Int) -> Html ()
-row (t, num) = tr_ (td_ typeNum <> td_ typeDesc <> td_ (fromString $ show t))
-    where typeDesc = fromString (prettyPrint t)
-          typeNum  = fromString (show num)
+        h2_ desc
+        p_ inner
